@@ -1,0 +1,25 @@
+{
+  "name": "drive-together",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A web application for organizing carpools",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "backend",
+    "frontend",
+    "config"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w backend",
+    "build": "npm run build -w frontend",
+    "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend",
+    "lint": "npm run lint -w backend && npm run lint -w frontend",
+    "test": "npm run test -w backend && npm run test -w frontend",
+    "test:run": "npm run test:run -w backend && npm run test:run -w frontend"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

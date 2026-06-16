@@ -33,11 +33,12 @@ frontend/   React-App (Vite), spricht das Backend über HTTP+JSON an
 - ESM-Module, `async/await`
 - Eingaben am API-Rand validieren (Fastify JSON-Schema)
 - Konfiguration über Umgebungsvariablen, keine Geheimnisse im Code
-- Kleine, fokussierte Commits
+- Keine automatischen Commits, die Commits werden manuell erstellt.
 
 ## Ports & Deployment
 
 ### Single-Port Architecture: 8080
+
 Die **gesamte Anwendung** ist über einen einzigen Port **8080** erreichbar. Dies gilt für Entwicklung und Produktion.
 
 #### Backend
@@ -65,7 +66,7 @@ Die **gesamte Anwendung** ist über einen einzigen Port **8080** erreichbar. Die
 
 ## Definition of Done
 
-Eine Änderung ist fertig, wenn **Typecheck, Lint und Tests grün** sind.
+Eine Änderung ist fertig, wenn das Skript `./check.sh` ohne Fehler und Warnungen durchläuft.
 
 ## Nicht-Ziele (bewusst out of scope)
 

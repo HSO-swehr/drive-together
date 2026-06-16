@@ -1,0 +1,35 @@
+{
+  "name": "drive-together-frontend",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Frontend for drive-together carpooling app",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "bootstrap": "^5.3.2"
+  },
+  "devDependencies": {
+    "typescript": "5.5.4",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@eslint/js": "^8.56.0",
+    "eslint": "^8.55.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.1.1",
+    "vitest": "^1.1.0",
+    "@vitest/ui": "^1.1.0",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/jest-dom": "^6.1.5",
+    "jsdom": "^23.0.1",
+    "vite": "^5.0.8",
+    "@vitejs/plugin-react": "^4.2.1",
+    "terser": "^5.27.0"
+  }
+}
