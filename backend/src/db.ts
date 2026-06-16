@@ -2,11 +2,29 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import { migrations } from './db/migrations.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dbPath = process.env.DATABASE_PATH || path.join(__dirname, '../../data/app.db');
+// Repo root, independent of the current working directory. Both src/ (dev via
+// tsx) and dist/ (prod) sit one level below backend/, so ../.. is the repo root.
+const repoRoot = path.resolve(__dirname, '../..');
+
+// Resolved lazily inside initDb() so DATABASE_PATH (e.g. ':memory:' in tests)
+// is read at call time, not at module load. A relative DATABASE_PATH is always
+// resolved against the repo root — never the CWD — so the DB lands in the same
+// place whether started via `npm run dev -w backend` or from the repo root.
+function resolveDbPath(): string {
+  const configured = process.env.DATABASE_PATH;
+  if (!configured) {
+    return path.join(repoRoot, 'data', 'app.db');
+  }
+  if (configured === ':memory:') {
+    return configured;
+  }
+  return path.resolve(repoRoot, configured);
+}
 
 let db: Database.Database | null = null;
 
@@ -19,9 +37,12 @@ export function getDb(): Database.Database {
 
 export function initDb(): void {
   try {
-    // Ensure directory exists
-    const dir = path.dirname(dbPath);
-    fs.mkdirSync(dir, { recursive: true });
+    const dbPath = resolveDbPath();
+
+    // Ensure directory exists (skip for the in-memory database)
+    if (dbPath !== ':memory:') {
+      fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+    }
 
     db = new Database(dbPath);
     db.pragma('journal_mode = WAL');
@@ -38,53 +59,9 @@ export function initDb(): void {
 function runMigrations(): void {
   if (!db) return;
 
-  // Check if migrations have already run
-  const tableExists = db
-    .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
-    .all().length > 0;
-
-  if (tableExists) {
-    console.log('✅ Database schema already initialized');
-    return;
-  }
-
+  // Schema is defined once in ./db/migrations.ts. The statements use
+  // CREATE TABLE IF NOT EXISTS, so running them repeatedly is idempotent.
   console.log('Running database migrations...');
-
-  const migrations = [
-    `
-      CREATE TABLE users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE NOT NULL,
-        password_hash TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
-    `,
-    `
-      CREATE TABLE rides (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        driver_id INTEGER NOT NULL,
-        start_location TEXT NOT NULL,
-        end_location TEXT NOT NULL,
-        departure_time DATETIME NOT NULL,
-        available_seats INTEGER NOT NULL CHECK (available_seats > 0),
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (driver_id) REFERENCES users(id) ON DELETE CASCADE
-      );
-    `,
-    `
-      CREATE TABLE bookings (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        ride_id INTEGER NOT NULL,
-        passenger_id INTEGER NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(ride_id, passenger_id),
-        FOREIGN KEY (ride_id) REFERENCES rides(id) ON DELETE CASCADE,
-        FOREIGN KEY (passenger_id) REFERENCES users(id) ON DELETE CASCADE
-      );
-    `,
-  ];
 
   for (const migration of migrations) {
     db.exec(migration);

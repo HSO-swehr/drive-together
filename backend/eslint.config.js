@@ -5,6 +5,5 @@ export default createEslintConfig({
     process: 'readonly',
     console: 'readonly',
   },
-  sourceFiles: 'src/**/*.ts',
+  sourceFiles: '{src,tests}/**/*.ts',
 });
-

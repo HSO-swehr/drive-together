@@ -3,7 +3,7 @@
 ## Allgemeine Hinweise
 
 Es gibt **einen** Nutzertyp. „Fahrer" und „Mitfahrer" bezeichnen die jeweilige
-Rolle *innerhalb einer Fahrt* — keine getrennten Konten: dieselbe Person kann
+Rolle _innerhalb einer Fahrt_ — keine getrennten Konten: dieselbe Person kann
 Fahrten anbieten und sich auf fremde Fahrten anmelden.
 
 ## Stories
@@ -52,4 +52,3 @@ Fahrten anbieten und sich auf fremde Fahrten anmelden.
 - Reservierung nur, solange Sitzplätze frei sind; danach Fehlermeldung
 - Eine Reservierung verringert die freien Sitzplätze um 1
 - Pro Nutzer max. eine Reservierung je Fahrt
-

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { initDb, getDb, closeDb } from '../src/db';
+import { initDb, getDb, closeDb } from '../src/db.js';
 
 describe('Database', () => {
   beforeAll(() => {
@@ -21,9 +21,7 @@ describe('Database', () => {
     const db = getDb();
 
     const tableNames = db
-      .prepare(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
-      )
+      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
       .all() as Array<{ name: string }>;
 
     const tables = tableNames.map((t) => t.name);

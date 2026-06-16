@@ -1,5 +1,5 @@
-// This file contains database schema definitions
-// Migrations are executed in src/db.ts during initialization
+// Single source of truth for the database schema.
+// Imported and executed by src/db.ts during initialization (idempotent).
 
 export const migrations = [
   // Users table

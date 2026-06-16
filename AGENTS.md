@@ -24,9 +24,9 @@ frontend/   React-App (Vite), spricht das Backend über HTTP+JSON an
 
 - Installieren: `npm install`
 - Entwicklung: `npm run dev`
-- Typecheck: `npm run typecheck`  (`tsc --noEmit`)
-- Lint: `npm run lint`  (ESLint)
-- Tests: `npm test`  (Vitest)
+- Typecheck: `npm run typecheck` (`tsc --noEmit`)
+- Lint: `npm run lint` (ESLint)
+- Tests: `npm test` (Vitest)
 
 ## Konventionen
 
@@ -42,12 +42,14 @@ frontend/   React-App (Vite), spricht das Backend über HTTP+JSON an
 Die **gesamte Anwendung** ist über einen einzigen Port **8080** erreichbar. Dies gilt für Entwicklung und Produktion.
 
 #### Backend
+
 - **Fastify-Server** lauscht auf `0.0.0.0:8080`
 - Serviert zwei Arten von Content:
   1. **API-Endpoints** unter `/api/*` (JSON)
   2. **Statische Frontend-Dateien** auf `/` (HTML, CSS, JavaScript)
 
 #### Frontend (Keine separaten Ports)
+
 - **Produktion**: Das gebaute Frontend (`frontend/dist/`) wird vom Backend als statische Dateien serviert
   - `npm run build -w frontend` erzeugt optimierte Bundles
   - Backend lädt diese beim Start und serviert sie auf `/`
@@ -56,11 +58,13 @@ Die **gesamte Anwendung** ist über einen einzigen Port **8080** erreichbar. Die
   - Keine separaten Prozesse, alles in einem Server
 
 #### CORS & API-Calls
+
 - Frontend und API laufen auf dem gleichen Origin (`localhost:8080`)
 - API-Calls von Frontend zu Backend funktionieren ohne CORS-Probleme
 - Beispiel: `fetch('/api/rides')` geht zu `http://localhost:8080/api/rides`
 
 #### Devcontainer
+
 - Nur Port 8080 wird geforwardet
 - User öffnet Browser auf `http://localhost:8080` und erhält direkt das vollständige Frontend
 

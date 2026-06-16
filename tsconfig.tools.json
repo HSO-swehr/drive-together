@@ -1,0 +1,17 @@
+{
+  // Type-checks the build/test tooling that lives outside the workspaces'
+  // src/tests (shared configs in config/ and each workspace's *.config.ts).
+  // Uses bundler resolution so extensionless imports like
+  // '../config/vitest.shared' resolve the same way the bundlers see them.
+  "extends": "./config/tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": [
+    "config/**/*.ts",
+    "backend/vitest.config.ts",
+    "frontend/vite.config.ts",
+    "frontend/vitest.config.ts"
+  ]
+}

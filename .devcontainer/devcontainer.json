@@ -1,15 +1,14 @@
 {
-  "name": "my-devcontainer",
+  "name": "drive-together",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y sqlite3",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y sqlite3 vim",
   "forwardPorts": [8080],
   "workspaceFolder": "/work",
   "mounts": [
     "source=${localWorkspaceFolder},target=/work,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,readonly",
-    "source=${localEnv:HOME}/.git,target=/root/.git,type=bind,readonly",
-    "source=${localEnv:HOME}/.gitconfig,target=/root/.gitconfig,type=bind,readonly",
-    "source=${localEnv:HOME}/.claude,target=/root/.claude,type=bind"
+    "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,readonly",
+    "source=${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,readonly",
+    "source=${localEnv:HOME}/.claude,target=/home/node/.claude,type=bind"
   ],
   "containerEnv": {
     "DISABLE_TELEMETRY": "1",
@@ -25,7 +24,7 @@
         "katjanakosic.vscode-json5",
         "ms-azuretools.vscode-docker",
         "ms-vscode.vscode-typescript-next",
-        "redhat.vscode-yaml",
+        "redhat.vscode-yaml"
       ]
     }
   }
