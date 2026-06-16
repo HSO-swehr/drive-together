@@ -1,0 +1,32 @@
+{
+  "name": "my-devcontainer",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y sqlite3",
+  "forwardPorts": [8080],
+  "workspaceFolder": "/work",
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/work,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,readonly",
+    "source=${localEnv:HOME}/.git,target=/root/.git,type=bind,readonly",
+    "source=${localEnv:HOME}/.gitconfig,target=/root/.gitconfig,type=bind,readonly",
+    "source=${localEnv:HOME}/.claude,target=/root/.claude,type=bind"
+  ],
+  "containerEnv": {
+    "DISABLE_TELEMETRY": "1",
+    "DISABLE_ERROR_REPORTING": "1",
+    "DISABLE_FEEDBACK_COMMAND": "1",
+    "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "dbaeumer.vscode-eslint",
+        "katjanakosic.vscode-json5",
+        "ms-azuretools.vscode-docker",
+        "ms-vscode.vscode-typescript-next",
+        "redhat.vscode-yaml",
+      ]
+    }
+  }
+}
