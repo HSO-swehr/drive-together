@@ -13,6 +13,9 @@ export const EMAIL_PATTERN = '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$';
 
 export const EMAIL_MAX_LENGTH = 100;
 export const PASSWORD_MIN_LENGTH = 4;
+// bcrypt silently truncates input beyond 72 bytes, so anything longer would be
+// hashed only up to that point. Cap it explicitly instead of hashing a prefix.
+export const PASSWORD_MAX_LENGTH = 72;
 
 const EMAIL_REGEX = new RegExp(EMAIL_PATTERN);
 
@@ -21,7 +24,7 @@ export function isValidEmail(email: string): boolean {
   return email.length <= EMAIL_MAX_LENGTH && EMAIL_REGEX.test(email);
 }
 
-/** True if the password meets the minimum length. */
+/** True if the password length is within the allowed range. */
 export function isValidPassword(password: string): boolean {
-  return password.length >= PASSWORD_MIN_LENGTH;
+  return password.length >= PASSWORD_MIN_LENGTH && password.length <= PASSWORD_MAX_LENGTH;
 }

@@ -1,11 +1,13 @@
 import type { FastifyInstance } from 'fastify';
 import bcrypt from 'bcrypt';
 import type { AuthRegisterRequest, AuthRegisterResponse } from 'shared';
-import { EMAIL_PATTERN, EMAIL_MAX_LENGTH, PASSWORD_MIN_LENGTH } from 'shared';
-import { userExists, createUser, createSession } from '../db.js';
+import { EMAIL_PATTERN, EMAIL_MAX_LENGTH, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from 'shared';
+import { createUser } from '../db.js';
 
 // bcrypt work factor. Higher = slower = more resistant to brute force.
 const BCRYPT_ROUNDS = 10;
+
+const EMAIL_TAKEN_MESSAGE = 'Diese E-Mail ist bereits registriert.';
 
 // Validation happens at the API edge via Fastify's JSON schema, built from the
 // same constants the frontend validates against (shared/auth.validation) so the
@@ -18,7 +20,7 @@ const registerSchema = {
     additionalProperties: false,
     properties: {
       email: { type: 'string', maxLength: EMAIL_MAX_LENGTH, pattern: EMAIL_PATTERN },
-      password: { type: 'string', minLength: PASSWORD_MIN_LENGTH },
+      password: { type: 'string', minLength: PASSWORD_MIN_LENGTH, maxLength: PASSWORD_MAX_LENGTH },
     },
   },
 } as const;
@@ -44,37 +46,23 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
       if (request.validationError) {
         return reply.code(400).send({
           success: false,
-          error: `Ungültige Eingabe: gültige E-Mail (max. ${EMAIL_MAX_LENGTH} Zeichen) und Passwort (min. ${PASSWORD_MIN_LENGTH} Zeichen) erforderlich.`,
+          error: `Ungültige Eingabe: gültige E-Mail (max. ${EMAIL_MAX_LENGTH} Zeichen) und Passwort (${PASSWORD_MIN_LENGTH}–${PASSWORD_MAX_LENGTH} Zeichen) erforderlich.`,
         });
       }
 
       const { email, password } = request.body;
 
-      // Fast path: clean 409 without doing the (expensive) hash work.
-      if (userExists(email)) {
-        return reply
-          .code(409)
-          .send({ success: false, error: 'Diese E-Mail ist bereits registriert.' });
-      }
-
       try {
         const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
-        const userId = createUser(email, passwordHash);
-        const sessionId = createSession(userId);
+        createUser(email, passwordHash);
 
-        // Session cookie. Secure is accepted on localhost by modern browsers.
-        // The session id travels only in the HttpOnly cookie, never in the
-        // response body, so it stays out of reach of frontend JavaScript.
-        reply.header('Set-Cookie', `session=${sessionId}; HttpOnly; Secure; SameSite=Lax; Path=/`);
-
+        // Registration does not log the user in — that is User Story 2 (login).
         return reply.code(201).send({ success: true });
       } catch (error) {
-        // Guards the check-then-insert race: a concurrent request may have
-        // inserted the same email between userExists() and createUser().
+        // The UNIQUE constraint on email is the single source of truth for
+        // duplicates: no pre-check, just translate the violation into a 409.
         if (isUniqueViolation(error)) {
-          return reply
-            .code(409)
-            .send({ success: false, error: 'Diese E-Mail ist bereits registriert.' });
+          return reply.code(409).send({ success: false, error: EMAIL_TAKEN_MESSAGE });
         }
         request.log.error(error, 'Registration failed');
         return reply.code(500).send({ success: false, error: 'Interner Serverfehler.' });

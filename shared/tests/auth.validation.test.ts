@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   EMAIL_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
+  PASSWORD_MAX_LENGTH,
   isValidEmail,
   isValidPassword,
 } from '../src/auth.validation.js';
@@ -41,13 +42,18 @@ describe('isValidEmail', () => {
 });
 
 describe('isValidPassword', () => {
-  it('accepts a password at or above the minimum length', () => {
+  it('accepts a password within the allowed length range', () => {
     expect(isValidPassword('a'.repeat(PASSWORD_MIN_LENGTH))).toBe(true);
     expect(isValidPassword('longenoughsecret')).toBe(true);
+    expect(isValidPassword('a'.repeat(PASSWORD_MAX_LENGTH))).toBe(true);
   });
 
   it('rejects a too-short password', () => {
     expect(isValidPassword('a'.repeat(PASSWORD_MIN_LENGTH - 1))).toBe(false);
     expect(isValidPassword('')).toBe(false);
+  });
+
+  it('rejects a too-long password (> PASSWORD_MAX_LENGTH)', () => {
+    expect(isValidPassword('a'.repeat(PASSWORD_MAX_LENGTH + 1))).toBe(false);
   });
 });

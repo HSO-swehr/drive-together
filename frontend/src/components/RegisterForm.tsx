@@ -1,6 +1,12 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { EMAIL_MAX_LENGTH, PASSWORD_MIN_LENGTH, isValidEmail, isValidPassword } from 'shared';
+import {
+  EMAIL_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_MAX_LENGTH,
+  isValidEmail,
+  isValidPassword,
+} from 'shared';
 import { registerUser } from '../api/auth';
 
 /**
@@ -30,7 +36,7 @@ export default function RegisterForm() {
     const result = await registerUser(email, password);
 
     if (result.success) {
-      // Session cookie is set by the backend; head to login (later: rides list).
+      // Registration only creates the account; the user logs in next (Story 2).
       navigate('/login');
       return;
     }
@@ -82,13 +88,15 @@ export default function RegisterForm() {
                 type="password"
                 className={`form-control${password !== '' && !passwordValid ? ' is-invalid' : ''}`}
                 value={password}
+                maxLength={PASSWORD_MAX_LENGTH}
                 autoComplete="new-password"
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
               />
               {password !== '' && !passwordValid && (
                 <div className="invalid-feedback">
-                  Das Passwort muss mindestens {PASSWORD_MIN_LENGTH} Zeichen lang sein.
+                  Das Passwort muss zwischen {PASSWORD_MIN_LENGTH} und {PASSWORD_MAX_LENGTH} Zeichen
+                  lang sein.
                 </div>
               )}
             </div>

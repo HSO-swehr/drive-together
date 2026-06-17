@@ -3,14 +3,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import bcrypt from 'bcrypt';
 import type { AuthRegisterResponse } from 'shared';
 import { authRoutes } from '../src/routes/auth.js';
-import { initDb, closeDb, getDb, getSessionUser, createSession, userExists } from '../src/db.js';
-
-/** Pull the session id out of a `Set-Cookie` header value. */
-function sessionIdFromCookie(cookie: string | string[] | undefined): string {
-  const value = Array.isArray(cookie) ? cookie.join(';') : (cookie ?? '');
-  const match = /session=([^;]+)/.exec(value);
-  return match?.[1] ?? '';
-}
+import { initDb, closeDb, getDb } from '../src/db.js';
 
 describe('POST /api/auth/register', () => {
   let app: FastifyInstance;
@@ -38,25 +31,14 @@ describe('POST /api/auth/register', () => {
 
   // --- Integration: happy path ---------------------------------------------
 
-  it('registers a new user: 201, session cookie, no sessionId in body', async () => {
+  it('registers a new user: 201, success body, no auto-login', async () => {
     const res = await register({ email: 'new@example.com', password: 'secret' });
     expect(res.statusCode).toBe(201);
+    expect((res.json() as AuthRegisterResponse).success).toBe(true);
 
-    const body = res.json() as AuthRegisterResponse;
-    expect(body.success).toBe(true);
-    // The session id must never leak into the response body — cookie only.
-    expect(body).not.toHaveProperty('sessionId');
-
-    const cookie = res.headers['set-cookie'];
-    expect(cookie).toContain('session=');
-    expect(cookie).toContain('HttpOnly');
-    expect(cookie).toContain('Secure');
-    expect(cookie).toContain('SameSite=Lax');
-
-    // The cookie's session is persisted and maps back to a real user.
-    const sessionId = sessionIdFromCookie(cookie);
-    expect(sessionId).not.toBe('');
-    expect(getSessionUser(sessionId)).not.toBeNull();
+    // Registration does not log the user in yet (that is Story 2) — so it must
+    // not hand out a session cookie.
+    expect(res.headers['set-cookie']).toBeUndefined();
   });
 
   // --- bcrypt hashing -------------------------------------------------------
@@ -92,6 +74,12 @@ describe('POST /api/auth/register', () => {
     expect((res.json() as AuthRegisterResponse).success).toBe(false);
   });
 
+  it('rejects an over-long password (400)', async () => {
+    // Longer than bcrypt's 72-byte limit, which the schema rejects up front.
+    const res = await register({ email: 'longpw@example.com', password: 'a'.repeat(73) });
+    expect(res.statusCode).toBe(400);
+  });
+
   // --- Email validation -----------------------------------------------------
 
   it('rejects a malformed email (400)', async () => {
@@ -115,37 +103,8 @@ describe('POST /api/auth/register', () => {
 
   it('rejects a whitespace-padded email at the API edge (400)', async () => {
     // The schema pattern forbids whitespace, so padded input never reaches the
-    // handler — it is rejected before normalization rather than trimmed.
+    // handler. (Case/whitespace normalization itself is covered in db.test.ts.)
     const res = await register({ email: '  padded@example.com  ', password: 'secret' });
     expect(res.statusCode).toBe(400);
-  });
-
-  it('normalizeEmail collapses case and whitespace at the helper level', async () => {
-    await register({ email: 'norm@example.com', password: 'secret' });
-    // Direct helper call bypasses the schema: trim + lowercase both apply, so a
-    // differently-cased / padded address resolves to the same stored user.
-    expect(userExists('  NORM@Example.com  ')).toBe(true);
-  });
-});
-
-// --- DB helpers (unit) ------------------------------------------------------
-
-describe('session helpers', () => {
-  beforeAll(() => {
-    process.env.DATABASE_PATH = ':memory:';
-    initDb();
-  });
-
-  afterAll(() => {
-    closeDb();
-  });
-
-  it('getSessionUser returns null for an unknown session id', () => {
-    expect(getSessionUser('does-not-exist')).toBeNull();
-  });
-
-  it('createSession rejects a non-existent user_id (foreign key enforced)', () => {
-    // Fails only if PRAGMA foreign_keys = ON is actually set.
-    expect(() => createSession(999_999)).toThrow();
   });
 });

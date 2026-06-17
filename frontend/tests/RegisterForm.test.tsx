@@ -63,7 +63,7 @@ describe('RegisterForm', () => {
     expect(screen.getByText(/gültige E-Mail-Adresse/i)).toBeInTheDocument();
 
     fireEvent.change(passwordInput(), { target: { value: 'ab' } });
-    expect(screen.getByText(/mindestens .* Zeichen/i)).toBeInTheDocument();
+    expect(screen.getByText(/zwischen .* Zeichen/i)).toBeInTheDocument();
   });
 
   it('navigates to /login on success and disables the button while loading', async () => {
