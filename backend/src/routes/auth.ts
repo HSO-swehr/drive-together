@@ -1,17 +1,15 @@
 import type { FastifyInstance } from 'fastify';
 import bcrypt from 'bcrypt';
 import type { AuthRegisterRequest, AuthRegisterResponse } from 'shared';
+import { EMAIL_PATTERN, EMAIL_MAX_LENGTH, PASSWORD_MIN_LENGTH } from 'shared';
 import { userExists, createUser, createSession } from '../db.js';
 
 // bcrypt work factor. Higher = slower = more resistant to brute force.
 const BCRYPT_ROUNDS = 10;
 
-// Validation happens at the API edge via Fastify's JSON schema. The email is
-// checked structurally (length) and with a pragmatic pattern; the password only
-// needs a minimum length per the user story.
-const EMAIL_PATTERN = '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$';
-const EMAIL_MAX_LENGTH = 100;
-const PASSWORD_MIN_LENGTH = 4;
+// Validation happens at the API edge via Fastify's JSON schema, built from the
+// same constants the frontend validates against (shared/auth.validation) so the
+// two layers cannot drift apart.
 
 const registerSchema = {
   body: {
