@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import Fastify, { type FastifyInstance } from 'fastify';
 import bcrypt from 'bcrypt';
-import type { AuthResponse } from 'shared';
+import type { AuthResponse, AuthMeResponse } from 'shared';
 import { authRoutes } from '../src/routes/auth.js';
 import { initDb, closeDb, getDb, getSessionUser } from '../src/db.js';
 
@@ -183,5 +183,61 @@ describe('POST /api/auth/login', () => {
   it('rejects a missing field (400)', async () => {
     const res = await login({ email: 'member@example.com' });
     expect(res.statusCode).toBe(400);
+  });
+});
+
+describe('GET /api/auth/me', () => {
+  let app: FastifyInstance;
+  let sessionCookie: string;
+
+  beforeAll(async () => {
+    process.env.DATABASE_PATH = ':memory:';
+    initDb();
+    app = Fastify();
+    await app.register(authRoutes);
+    await app.ready();
+
+    await app.inject({
+      method: 'POST',
+      url: '/api/auth/register',
+      headers: { 'content-type': 'application/json' },
+      payload: { email: 'member@example.com', password: 'correct horse' },
+    });
+    const loginRes = await app.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      headers: { 'content-type': 'application/json' },
+      payload: { email: 'member@example.com', password: 'correct horse' },
+    });
+    const setCookie = loginRes.headers['set-cookie'];
+    // Re-send only the name=value pair (drop the attributes) as a Cookie header.
+    sessionCookie = /session=[^;]+/.exec(
+      Array.isArray(setCookie) ? setCookie.join(';') : (setCookie ?? '')
+    )![0];
+  });
+
+  afterAll(async () => {
+    await app.close();
+    closeDb();
+  });
+
+  const me = (headers: Record<string, string> = {}) =>
+    app.inject({ method: 'GET', url: '/api/auth/me', headers });
+
+  it('reports authenticated for a valid session cookie', async () => {
+    const res = await me({ cookie: sessionCookie });
+    expect(res.statusCode).toBe(200);
+    expect((res.json() as AuthMeResponse).authenticated).toBe(true);
+  });
+
+  it('reports not authenticated without a cookie', async () => {
+    const res = await me();
+    expect(res.statusCode).toBe(200);
+    expect((res.json() as AuthMeResponse).authenticated).toBe(false);
+  });
+
+  it('reports not authenticated for an unknown session id', async () => {
+    const res = await me({ cookie: 'session=does-not-exist' });
+    expect((res.json() as AuthMeResponse).authenticated).toBe(false);
   });
 });

@@ -21,3 +21,12 @@ export interface AuthResponseError {
 }
 
 export type AuthResponse = AuthResponseSuccess | AuthResponseError;
+
+/**
+ * Response of `GET /api/auth/me`: whether the request carries a valid session
+ * cookie. Used by the frontend to render the start page in a logged-in vs.
+ * anonymous state. No user details are exposed yet — only the boolean.
+ */
+export interface AuthMeResponse {
+  authenticated: boolean;
+}

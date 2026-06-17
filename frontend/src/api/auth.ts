@@ -1,4 +1,4 @@
-import type { AuthRequest, AuthResponse } from 'shared';
+import type { AuthRequest, AuthResponse, AuthMeResponse } from 'shared';
 
 const NETWORK_ERROR: AuthResponse = {
   success: false,
@@ -37,4 +37,19 @@ export function registerUser(email: string, password: string): Promise<AuthRespo
  */
 export function loginUser(email: string, password: string): Promise<AuthResponse> {
   return postAuth('/api/auth/login', email, password);
+}
+
+/**
+ * Whether the current visitor has a valid session. The (HttpOnly) session cookie
+ * is sent automatically on this same-origin request; any failure is treated as
+ * "not logged in" so callers get a plain boolean.
+ */
+export async function getAuthStatus(): Promise<boolean> {
+  try {
+    const response = await fetch('/api/auth/me');
+    if (!response.ok) return false;
+    return ((await response.json()) as AuthMeResponse).authenticated;
+  } catch {
+    return false;
+  }
 }

@@ -6,8 +6,11 @@ import App from '../src/App';
 import { loginUser } from '../src/api/auth';
 
 // The API client is mocked so the form is tested in isolation (no real fetch).
+// getAuthStatus is stubbed too: a successful login navigates to the start page,
+// which queries it — return true there so HomePage renders the logged-in view.
 vi.mock('../src/api/auth', () => ({
   loginUser: vi.fn(),
+  getAuthStatus: vi.fn().mockResolvedValue(true),
 }));
 
 const mockedLogin = vi.mocked(loginUser);
