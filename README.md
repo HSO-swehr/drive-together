@@ -8,8 +8,6 @@ Entwicklung mit Hilfe von Coding-Agenten beizubringen.
 
 **Tech-Stack und Architektur:** siehe `AGENTS.md`
 
-**Voraussetzungen:** Node.js ≥ 22.9 und npm ≥ 10 (im Devcontainer bereits vorhanden)
-
 **Einrichten:**
 ```bash
 npm install            # installiert alle Workspaces auf einmal
