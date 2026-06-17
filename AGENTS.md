@@ -18,17 +18,26 @@ Coding-Agenten. Fachliche Anforderungen stehen in `USER_STORIES.md`.
 ## Projektstruktur
 
 ```
+shared/     TypeScript-Typen & Utilities (Backend + Frontend)
 backend/    Fastify-API + Datenzugriff (better-sqlite3)
 frontend/   React-App (Vite), spricht das Backend über HTTP+JSON an
+config/     Gemeinsame Konfiguration (TypeScript, ESLint, Vitest)
 ```
 
-## Befehle (je Teilprojekt)
+## Befehle
 
-- Installieren: `npm install`
-- Entwicklung: `npm run dev`
-- Typecheck: `npm run typecheck` (`tsc --noEmit`)
-- Lint: `npm run lint` (ESLint)
-- Tests: `npm test` (Vitest)
+**Root-Verzeichnis:**
+
+- Tests (alle): `npm test` (Vitest, inkl. `shared/tests/*`, `backend/tests/*`, `frontend/tests/*`)
+- Typecheck (alle): `npm run typecheck`
+- Lint (alle): `npm run lint`
+
+**Einrichten & Entwicklung:**
+
+- Installieren (alle Workspaces): `npm install` (im Root)
+- Entwicklung: `npm run dev` bzw. `npm run dev:watch` (im Root) — startet den
+  Backend-Server auf Port 8080; das Frontend wird über die Vite-Middleware des
+  Backends ausgeliefert (HMR). Es gibt **kein** separates `dev` im Frontend.
 
 ## Konventionen
 
@@ -36,6 +45,13 @@ frontend/   React-App (Vite), spricht das Backend über HTTP+JSON an
 - Eingaben am API-Rand validieren (Fastify JSON-Schema)
 - Konfiguration über Umgebungsvariablen, keine Geheimnisse im Code
 - Keine automatischen Commits, die Commits werden manuell erstellt.
+- **shared/**: Gemeinsame TypeScript-Typen & Utilities, importierbar via `from 'shared'`.
+  Keine externen Runtime-Dependencies. Wird als Workspace nach `shared/dist` gebaut
+  (`npm run build -w shared`); der Typecheck löst die Typen direkt aus dem Source
+  (`shared/src`) auf, ein Build ist dafür nicht nötig. Das Frontend bindet `shared`
+  per Vite-Alias aus dem Source ein. Für **Runtime-Utils im Backend** muss `shared`
+  vor `npm run dev`/`start` einmal gebaut werden (reine Typen brauchen keinen Build,
+  da `import type` beim Kompilieren entfällt).
 
 ## Ports & Deployment
 

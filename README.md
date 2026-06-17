@@ -9,12 +9,14 @@ Entwicklung mit Hilfe von Coding-Agenten beizubringen.
 **Tech-Stack und Architektur:** siehe `AGENTS.md`
 
 **Einrichten:**
+
 ```bash
 npm install            # installiert alle Workspaces auf einmal
 cp .env.example .env   # lokale Konfiguration (optional, sinnvolle Defaults sind gesetzt)
 ```
 
 **Entwicklung:**
+
 ```bash
 npm run dev:watch    # wie `dev`, startet den Server bei .ts-Änderungen neu
 ```

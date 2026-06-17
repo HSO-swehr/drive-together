@@ -49,3 +49,6 @@ frontend/.env.local
 
 # Misc
 .claude
+
+# Local scratch / working notes (not part of the project)
+scratch/
