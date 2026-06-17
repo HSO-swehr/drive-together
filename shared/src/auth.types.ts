@@ -9,7 +9,6 @@ export interface AuthRegisterRequest {
 
 export interface AuthRegisterResponseSuccess {
   success: true;
-  sessionId: string;
 }
 
 export interface AuthRegisterResponseError {

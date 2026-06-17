@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { initDb } from './db.js';
+import { authRoutes } from './routes/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,7 +22,8 @@ function registerApi(fastify: FastifyInstance): void {
     return { status: 'ok' };
   });
 
-  // TODO: Add authentication routes
+  fastify.register(authRoutes);
+
   // TODO: Add rides routes
   // TODO: Add bookings routes
 }

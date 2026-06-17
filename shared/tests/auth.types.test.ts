@@ -22,15 +22,12 @@ describe('Auth Types', () => {
   });
 
   describe('AuthRegisterResponseSuccess', () => {
-    it('should have success=true and sessionId', () => {
+    it('should have success=true', () => {
       const response: AuthRegisterResponseSuccess = {
         success: true,
-        sessionId: 'session-id-123',
       };
 
       expect(response.success).toBe(true);
-      expect(response).toHaveProperty('sessionId');
-      expect(typeof response.sessionId).toBe('string');
     });
   });
 
@@ -51,7 +48,6 @@ describe('Auth Types', () => {
     it('should accept success response', () => {
       const response: AuthRegisterResponse = {
         success: true,
-        sessionId: 'session-123',
       };
 
       expect(response.success).toBe(true);

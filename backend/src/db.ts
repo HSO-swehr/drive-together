@@ -47,6 +47,9 @@ export function initDb(): void {
 
     db = new Database(dbPath);
     db.pragma('journal_mode = WAL');
+    // better-sqlite3 leaves foreign keys OFF per connection by default. Enable
+    // them so the FK constraints (incl. ON DELETE CASCADE) are actually enforced.
+    db.pragma('foreign_keys = ON');
     console.log(`✅ Database connected: ${dbPath}`);
 
     // Import and run migrations
