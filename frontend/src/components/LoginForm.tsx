@@ -1,20 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  EMAIL_MAX_LENGTH,
-  PASSWORD_MIN_LENGTH,
-  PASSWORD_MAX_LENGTH,
-  isValidEmail,
-  isValidPassword,
-} from 'shared';
-import { registerUser } from '../api/auth';
+import { loginUser } from '../api/auth';
 
 /**
- * Registration form. Validates live against the shared validators, posts to
- * /api/auth/register, and on success navigates to the login route. The submit
- * button is disabled while the request is in flight or the input is invalid.
+ * Login form. Posts email + password to /api/auth/login and on success navigates
+ * to the start page. Validation is deliberately light — the button only requires
+ * both fields to be non-empty; invalid credentials are reported by the backend
+ * (401) rather than guessed at in the UI.
  */
-export default function RegisterForm() {
+export default function LoginForm() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
@@ -22,9 +16,7 @@ export default function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const emailValid = isValidEmail(email);
-  const passwordValid = isValidPassword(password);
-  const formValid = emailValid && passwordValid;
+  const formValid = email !== '' && password !== '';
 
   async function handleSubmit(event: FormEvent): Promise<void> {
     event.preventDefault();
@@ -33,11 +25,11 @@ export default function RegisterForm() {
     setLoading(true);
     setError(null);
 
-    const result = await registerUser(email, password);
+    const result = await loginUser(email, password);
 
     if (result.success) {
-      // Registration only creates the account; the user logs in next (Story 2).
-      navigate('/login');
+      // Session cookie is set by the backend; head to the start page.
+      navigate('/');
       return;
     }
 
@@ -49,7 +41,7 @@ export default function RegisterForm() {
     <div className="container mt-5">
       <div className="row">
         <div className="col-md-6 col-lg-5 mx-auto">
-          <h1 className="mb-4">Registrieren</h1>
+          <h1 className="mb-4">Anmelden</h1>
 
           {error && (
             <div className="alert alert-danger" role="alert">
@@ -65,18 +57,12 @@ export default function RegisterForm() {
               <input
                 id="email"
                 type="email"
-                className={`form-control${email !== '' && !emailValid ? ' is-invalid' : ''}`}
+                className="form-control"
                 value={email}
-                maxLength={EMAIL_MAX_LENGTH}
                 autoComplete="email"
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
               />
-              {email !== '' && !emailValid && (
-                <div className="invalid-feedback">
-                  Bitte gib eine gültige E-Mail-Adresse ein (max. {EMAIL_MAX_LENGTH} Zeichen).
-                </div>
-              )}
             </div>
 
             <div className="mb-3">
@@ -86,19 +72,12 @@ export default function RegisterForm() {
               <input
                 id="password"
                 type="password"
-                className={`form-control${password !== '' && !passwordValid ? ' is-invalid' : ''}`}
+                className="form-control"
                 value={password}
-                maxLength={PASSWORD_MAX_LENGTH}
-                autoComplete="new-password"
+                autoComplete="current-password"
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
               />
-              {password !== '' && !passwordValid && (
-                <div className="invalid-feedback">
-                  Das Passwort muss zwischen {PASSWORD_MIN_LENGTH} und {PASSWORD_MAX_LENGTH} Zeichen
-                  lang sein.
-                </div>
-              )}
             </div>
 
             <button
@@ -106,12 +85,12 @@ export default function RegisterForm() {
               className="btn btn-primary w-100"
               disabled={!formValid || loading}
             >
-              {loading ? 'Registriere…' : 'Registrieren'}
+              {loading ? 'Melde an…' : 'Anmelden'}
             </button>
           </form>
 
           <p className="mt-3 text-center">
-            Schon registriert? <Link to="/login">Anmelden</Link>
+            Noch kein Konto? <Link to="/register">Registrieren</Link>
           </p>
         </div>
       </div>

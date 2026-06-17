@@ -1,5 +1,13 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { initDb, getDb, closeDb, createUser, userExists } from '../src/db.js';
+import {
+  initDb,
+  getDb,
+  closeDb,
+  createUser,
+  getUserByEmail,
+  createSession,
+  getSessionUser,
+} from '../src/db.js';
 
 describe('Database', () => {
   beforeAll(() => {
@@ -27,19 +35,13 @@ describe('Database', () => {
     const tables = tableNames.map((t) => t.name);
 
     expect(tables).toContain('users');
+    expect(tables).toContain('sessions');
   });
 
   describe('User Operations', () => {
     it('should create a user and return user id', () => {
       const userId = createUser('test@example.com', 'hashed_password');
       expect(userId).toBeGreaterThan(0);
-    });
-
-    it('should check if user exists by email', () => {
-      createUser('existing@example.com', 'hashed_password');
-
-      expect(userExists('existing@example.com')).toBe(true);
-      expect(userExists('nonexistent@example.com')).toBe(false);
     });
 
     it('should throw error when creating user with duplicate email', () => {
@@ -51,16 +53,46 @@ describe('Database', () => {
     });
 
     it('should treat emails case- and whitespace-insensitively', () => {
-      createUser('  Normalized@Example.com ', 'hashed_password');
+      const userId = createUser('  Normalized@Example.com ', 'hashed_password');
 
       // Lookup with a differently-cased / padded variant finds the same user
-      expect(userExists('normalized@example.com')).toBe(true);
-      expect(userExists('NORMALIZED@EXAMPLE.COM')).toBe(true);
+      expect(getUserByEmail('normalized@example.com')?.id).toBe(userId);
+      expect(getUserByEmail('NORMALIZED@EXAMPLE.COM')?.id).toBe(userId);
 
       // A variant that only differs in case/whitespace is a duplicate
       expect(() => {
         createUser('normalized@example.com', 'password2');
       }).toThrow();
+    });
+
+    it('getUserByEmail returns id + hash for an existing user, case-insensitively', () => {
+      const userId = createUser('lookup@example.com', 'the_hash');
+
+      const found = getUserByEmail('LOOKUP@Example.com');
+      expect(found).toEqual({ id: userId, password_hash: 'the_hash' });
+    });
+
+    it('getUserByEmail returns undefined for an unknown user', () => {
+      expect(getUserByEmail('missing@example.com')).toBeUndefined();
+    });
+  });
+
+  describe('Session Operations', () => {
+    it('creates a session that maps back to its user', () => {
+      const userId = createUser('session@example.com', 'hashed_password');
+      const sessionId = createSession(userId);
+
+      expect(sessionId).toMatch(/^[0-9a-f-]{36}$/i);
+      expect(getSessionUser(sessionId)).toBe(userId);
+    });
+
+    it('returns null for an unknown session id', () => {
+      expect(getSessionUser('does-not-exist')).toBeNull();
+    });
+
+    it('rejects a session for a non-existent user (foreign key enforced)', () => {
+      // Fails only if PRAGMA foreign_keys = ON is actually set.
+      expect(() => createSession(999_999)).toThrow();
     });
   });
 });

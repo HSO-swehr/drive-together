@@ -13,8 +13,11 @@ export const EMAIL_PATTERN = '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$';
 
 export const EMAIL_MAX_LENGTH = 100;
 export const PASSWORD_MIN_LENGTH = 4;
-// bcrypt silently truncates input beyond 72 bytes, so anything longer would be
-// hashed only up to that point. Cap it explicitly instead of hashing a prefix.
+// bcrypt silently truncates input beyond 72 bytes, so an over-long password
+// would be hashed only up to that point. We cap the character length at 72 as a
+// pragmatic guard — note this counts code units, not bytes, so multi-byte
+// characters can still exceed 72 bytes; exact byte-level enforcement is out of
+// scope for this minimal auth.
 export const PASSWORD_MAX_LENGTH = 72;
 
 const EMAIL_REGEX = new RegExp(EMAIL_PATTERN);

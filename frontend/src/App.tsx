@@ -1,15 +1,16 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import RegisterForm from './components/RegisterForm';
+import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 
 /**
- * Application routes. `/` redirects to registration for now; more routes
- * (rides list, etc.) follow with later user stories.
+ * Application routes. `/` is the start page; more routes (rides list, etc.)
+ * follow with later user stories.
  */
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/register" replace />} />
+      <Route path="/" element={<HomePage />} />
       <Route path="/register" element={<RegisterForm />} />
       <Route path="/login" element={<LoginPage />} />
     </Routes>

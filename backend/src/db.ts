@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import { randomUUID } from 'crypto';
 import { migrations } from './db/migrations.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -47,7 +48,8 @@ export function initDb(): void {
     db = new Database(dbPath);
     db.pragma('journal_mode = WAL');
     // better-sqlite3 leaves foreign keys OFF per connection by default. Enable
-    // them so any FK constraints (added with later user stories) are enforced.
+    // them so the FK constraints (incl. sessions.user_id ON DELETE CASCADE) are
+    // actually enforced.
     db.pragma('foreign_keys = ON');
     console.log(`✅ Database connected: ${dbPath}`);
 
@@ -105,14 +107,33 @@ export function createUser(email: string, passwordHash: string): number {
 }
 
 /**
- * Check if a user with the given email exists. The email is normalized before
- * lookup, mirroring createUser.
- * @param email Email to check
- * @returns true if user exists, false otherwise
+ * Look up a user by email (normalized), returning the id and password hash
+ * needed to verify a login. Returns undefined if no such user exists.
  */
-export function userExists(email: string): boolean {
+export function getUserByEmail(email: string): { id: number; password_hash: string } | undefined {
   const database = getDb();
-  const stmt = database.prepare('SELECT 1 FROM users WHERE email = ?');
-  const result = stmt.get(normalizeEmail(email));
-  return result !== undefined;
+  const stmt = database.prepare('SELECT id, password_hash FROM users WHERE email = ?');
+  return stmt.get(normalizeEmail(email)) as { id: number; password_hash: string } | undefined;
+}
+
+/**
+ * Create a new session for a user and return its id (a random UUID used as the
+ * opaque session token in the cookie).
+ */
+export function createSession(userId: number): string {
+  const database = getDb();
+  const sessionId = randomUUID();
+  const stmt = database.prepare('INSERT INTO sessions (id, user_id) VALUES (?, ?)');
+  stmt.run(sessionId, userId);
+  return sessionId;
+}
+
+/**
+ * Resolve a session id to its user id, or null if the session does not exist.
+ */
+export function getSessionUser(sessionId: string): number | null {
+  const database = getDb();
+  const stmt = database.prepare('SELECT user_id FROM sessions WHERE id = ?');
+  const result = stmt.get(sessionId) as { user_id: number } | undefined;
+  return result?.user_id ?? null;
 }

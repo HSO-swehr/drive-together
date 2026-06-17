@@ -10,5 +10,17 @@ export const migrations = [
       password_hash TEXT NOT NULL
     )
   `,
-  // Sessions live with User Story 2 (login); no session table until then.
+
+  // Sessions table (created on login).
+  // Note: sessions do not expire yet — there is intentionally no expires_at
+  // column or expiry check. Add one here (plus a check in getSessionUser) when
+  // session expiration becomes a requirement.
+  `
+    CREATE TABLE IF NOT EXISTS sessions (
+      id TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `,
 ];

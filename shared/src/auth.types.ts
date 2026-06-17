@@ -1,19 +1,23 @@
 /**
- * Authentication Types — Shared between Backend and Frontend
+ * Authentication Types — Shared between Backend and Frontend.
+ *
+ * Registration and login share the same wire shape — email + password in,
+ * `{ success }` / `{ success, error }` out — so one set of types serves both
+ * `/api/auth/register` and `/api/auth/login`.
  */
 
-export interface AuthRegisterRequest {
+export interface AuthRequest {
   email: string;
   password: string;
 }
 
-export interface AuthRegisterResponseSuccess {
+export interface AuthResponseSuccess {
   success: true;
 }
 
-export interface AuthRegisterResponseError {
+export interface AuthResponseError {
   success: false;
   error: string;
 }
 
-export type AuthRegisterResponse = AuthRegisterResponseSuccess | AuthRegisterResponseError;
+export type AuthResponse = AuthResponseSuccess | AuthResponseError;

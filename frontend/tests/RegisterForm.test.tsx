@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom/vitest';
-import type { AuthRegisterResponse } from 'shared';
+import type { AuthResponse } from 'shared';
 import App from '../src/App';
 import { registerUser } from '../src/api/auth';
 
@@ -68,9 +68,9 @@ describe('RegisterForm', () => {
 
   it('navigates to /login on success and disables the button while loading', async () => {
     // Controlled promise so we can observe the in-flight (loading) state.
-    let resolve!: (r: AuthRegisterResponse) => void;
+    let resolve!: (r: AuthResponse) => void;
     mockedRegister.mockReturnValue(
-      new Promise<AuthRegisterResponse>((r) => {
+      new Promise<AuthResponse>((r) => {
         resolve = r;
       })
     );

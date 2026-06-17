@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import Fastify, { type FastifyInstance } from 'fastify';
 import bcrypt from 'bcrypt';
-import type { AuthRegisterResponse } from 'shared';
+import type { AuthResponse } from 'shared';
 import { authRoutes } from '../src/routes/auth.js';
-import { initDb, closeDb, getDb } from '../src/db.js';
+import { initDb, closeDb, getDb, getSessionUser } from '../src/db.js';
 
 describe('POST /api/auth/register', () => {
   let app: FastifyInstance;
@@ -34,7 +34,7 @@ describe('POST /api/auth/register', () => {
   it('registers a new user: 201, success body, no auto-login', async () => {
     const res = await register({ email: 'new@example.com', password: 'secret' });
     expect(res.statusCode).toBe(201);
-    expect((res.json() as AuthRegisterResponse).success).toBe(true);
+    expect((res.json() as AuthResponse).success).toBe(true);
 
     // Registration does not log the user in yet (that is Story 2) — so it must
     // not hand out a session cookie.
@@ -63,7 +63,7 @@ describe('POST /api/auth/register', () => {
     const res = await register({ email: 'DUP@Example.com', password: 'secret' });
 
     expect(res.statusCode).toBe(409);
-    expect((res.json() as AuthRegisterResponse).success).toBe(false);
+    expect((res.json() as AuthResponse).success).toBe(false);
   });
 
   // --- Password validation --------------------------------------------------
@@ -71,7 +71,7 @@ describe('POST /api/auth/register', () => {
   it('rejects a too-short password (400)', async () => {
     const res = await register({ email: 'shortpw@example.com', password: 'ab' });
     expect(res.statusCode).toBe(400);
-    expect((res.json() as AuthRegisterResponse).success).toBe(false);
+    expect((res.json() as AuthResponse).success).toBe(false);
   });
 
   it('rejects an over-long password (400)', async () => {
@@ -85,7 +85,7 @@ describe('POST /api/auth/register', () => {
   it('rejects a malformed email (400)', async () => {
     const res = await register({ email: 'not-an-email', password: 'secret' });
     expect(res.statusCode).toBe(400);
-    expect((res.json() as AuthRegisterResponse).success).toBe(false);
+    expect((res.json() as AuthResponse).success).toBe(false);
   });
 
   it('rejects an over-long email (400)', async () => {
@@ -105,6 +105,83 @@ describe('POST /api/auth/register', () => {
     // The schema pattern forbids whitespace, so padded input never reaches the
     // handler. (Case/whitespace normalization itself is covered in db.test.ts.)
     const res = await register({ email: '  padded@example.com  ', password: 'secret' });
+    expect(res.statusCode).toBe(400);
+  });
+});
+
+describe('POST /api/auth/login', () => {
+  let app: FastifyInstance;
+
+  beforeAll(async () => {
+    process.env.DATABASE_PATH = ':memory:';
+    initDb();
+    app = Fastify();
+    await app.register(authRoutes);
+    await app.ready();
+
+    // A single known account for the login cases below.
+    await app.inject({
+      method: 'POST',
+      url: '/api/auth/register',
+      headers: { 'content-type': 'application/json' },
+      payload: { email: 'member@example.com', password: 'correct horse' },
+    });
+  });
+
+  afterAll(async () => {
+    await app.close();
+    closeDb();
+  });
+
+  const login = (payload: Record<string, unknown>) =>
+    app.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      headers: { 'content-type': 'application/json' },
+      payload,
+    });
+
+  it('logs a registered user in: 200 + session cookie that maps to the user', async () => {
+    const res = await login({ email: 'member@example.com', password: 'correct horse' });
+    expect(res.statusCode).toBe(200);
+    expect((res.json() as AuthResponse).success).toBe(true);
+
+    const cookie = res.headers['set-cookie'];
+    expect(cookie).toContain('session=');
+    expect(cookie).toContain('HttpOnly');
+    expect(cookie).toContain('Secure');
+    expect(cookie).toContain('SameSite=Lax');
+
+    const sessionId = /session=([^;]+)/.exec(
+      Array.isArray(cookie) ? cookie.join(';') : (cookie ?? '')
+    )?.[1];
+    expect(getSessionUser(sessionId ?? '')).not.toBeNull();
+  });
+
+  it('accepts the email case-insensitively', async () => {
+    const res = await login({ email: 'MEMBER@Example.com', password: 'correct horse' });
+    expect(res.statusCode).toBe(200);
+  });
+
+  it('rejects a wrong password (401, no cookie)', async () => {
+    const res = await login({ email: 'member@example.com', password: 'wrong' });
+    expect(res.statusCode).toBe(401);
+    expect((res.json() as AuthResponse).success).toBe(false);
+    expect(res.headers['set-cookie']).toBeUndefined();
+  });
+
+  it('rejects an unknown email with the same response as a wrong password', async () => {
+    const wrongPw = await login({ email: 'member@example.com', password: 'wrong' });
+    const unknown = await login({ email: 'nobody@example.com', password: 'whatever' });
+
+    // Identical status and body, so the response does not reveal whether the
+    // email is registered (no user enumeration).
+    expect(unknown.statusCode).toBe(401);
+    expect(unknown.json()).toEqual(wrongPw.json());
+  });
+
+  it('rejects a missing field (400)', async () => {
+    const res = await login({ email: 'member@example.com' });
     expect(res.statusCode).toBe(400);
   });
 });
