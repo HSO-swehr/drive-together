@@ -115,12 +115,21 @@ describe('Database', () => {
       expect(ride.created_at).toBeDefined();
     });
 
-    it('should enforce available_seats > 0 constraint', () => {
+    it('should reject available_seats below the allowed minimum', () => {
       const userId = createUser('driver2@example.com', 'hashed_password');
       const futureTime = new Date(Date.now() + 86400000).toISOString();
 
       expect(() => {
         createRide(userId, 'Start', 'End', futureTime, 0);
+      }).toThrow();
+    });
+
+    it('should reject available_seats above the allowed maximum', () => {
+      const userId = createUser('driver2b@example.com', 'hashed_password');
+      const futureTime = new Date(Date.now() + 86400000).toISOString();
+
+      expect(() => {
+        createRide(userId, 'Start', 'End', futureTime, 10);
       }).toThrow();
     });
 

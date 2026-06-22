@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import type { Ride, ISO8601DateTime } from 'shared';
@@ -10,6 +10,17 @@ function toISO8601(date: string): ISO8601DateTime {
 }
 
 describe('RidesList', () => {
+  // Pin UTC so the formatted wall-clock is deterministic and can be asserted
+  // exactly (the fixtures use ...Z instants). Detailed TZ-offset behavior of the
+  // formatter itself is covered in tests/datetime.test.ts.
+  beforeAll(() => {
+    vi.stubEnv('TZ', 'UTC');
+  });
+
+  afterAll(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('renders table with correct headers', () => {
     const rides: Ride[] = [
       {
@@ -58,7 +69,7 @@ describe('RidesList', () => {
     expect(screen.getByText('Köln')).toBeInTheDocument();
   });
 
-  it('formats departure_time correctly (DD.MM.YYYY HH:MM)', () => {
+  it('formats departure_time as DD.MM.YYYY HH:MM', () => {
     const rides: Ride[] = [
       {
         id: 1,
@@ -72,9 +83,7 @@ describe('RidesList', () => {
     ];
 
     render(<RidesList rides={rides} />);
-    // Note: Date formatting is timezone-dependent, but the pattern should be DD.MM.YYYY HH:MM
-    const timeCell = screen.getByText(/\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}/);
-    expect(timeCell).toBeInTheDocument();
+    expect(screen.getByText('23.06.2026 14:30')).toBeInTheDocument();
   });
 
   it('displays correct singular/plural for seats', () => {

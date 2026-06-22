@@ -1,6 +1,8 @@
 // Single source of truth for the database schema.
 // Imported and executed by src/db.ts during initialization (idempotent).
 
+import { AVAILABLE_SEATS_MIN, AVAILABLE_SEATS_MAX } from 'shared';
+
 export const migrations = [
   // Users table
   `
@@ -25,6 +27,9 @@ export const migrations = [
   `,
 
   // Rides table (created for ride offerings).
+  // available_seats is bounded to the same range the API/UI enforce, so the DB
+  // is the last line of defense. Note: CREATE TABLE IF NOT EXISTS does not alter
+  // an already-existing table, so changing this CHECK only affects fresh DBs.
   `
     CREATE TABLE IF NOT EXISTS rides (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,7 +37,7 @@ export const migrations = [
       departure TEXT NOT NULL,
       destination TEXT NOT NULL,
       departure_time DATETIME NOT NULL,
-      available_seats INTEGER NOT NULL CHECK (available_seats > 0),
+      available_seats INTEGER NOT NULL CHECK (available_seats >= ${AVAILABLE_SEATS_MIN} AND available_seats <= ${AVAILABLE_SEATS_MAX}),
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )

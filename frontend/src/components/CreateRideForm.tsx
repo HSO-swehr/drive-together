@@ -9,6 +9,7 @@ import {
   AVAILABLE_SEATS_MAX,
 } from 'shared';
 import { createRide } from '../api/rides';
+import { localDateTimeToISO } from '../utils/datetime';
 
 interface CreateRideFormProps {
   onSuccess?: () => void;
@@ -53,15 +54,10 @@ export default function CreateRideForm({ onSuccess }: CreateRideFormProps) {
     setLoading(true);
     setError(null);
 
-    // Convert datetime-local value to ISO 8601 format with 'Z' suffix
-    const [datePart, timePart] = departureTime.split('T');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const isoDateTime = `${datePart}T${timePart}:00Z` as any;
-
     const data: CreateRideRequest = {
       departure: departure.trim(),
       destination: destination.trim(),
-      departure_time: isoDateTime,
+      departure_time: localDateTimeToISO(departureTime),
       available_seats: parseInt(availableSeats, 10),
     };
 

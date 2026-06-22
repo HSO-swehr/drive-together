@@ -68,7 +68,11 @@ const createRideResponseSchema = {
             departure: { type: 'string' },
             destination: { type: 'string' },
             departure_time: { type: 'string', format: 'date-time' },
-            available_seats: { type: 'integer', minimum: AVAILABLE_SEATS_MIN },
+            available_seats: {
+              type: 'integer',
+              minimum: AVAILABLE_SEATS_MIN,
+              maximum: AVAILABLE_SEATS_MAX,
+            },
             created_at: { type: 'string', format: 'date-time' },
           },
         },
@@ -125,7 +129,11 @@ const myRidesResponseSchema = {
               departure: { type: 'string' },
               destination: { type: 'string' },
               departure_time: { type: 'string', format: 'date-time' },
-              available_seats: { type: 'integer', minimum: AVAILABLE_SEATS_MIN },
+              available_seats: {
+                type: 'integer',
+                minimum: AVAILABLE_SEATS_MIN,
+                maximum: AVAILABLE_SEATS_MAX,
+              },
               created_at: { type: 'string', format: 'date-time' },
             },
           },
@@ -143,6 +151,44 @@ const myRidesResponseSchema = {
     },
   },
 } as const;
+
+/**
+ * Turn Fastify's first JSON-schema validation failure into a specific German
+ * message. Avoids the misleading blanket "all fields required" by naming the
+ * field and constraint that actually failed.
+ */
+function validationMessage(
+  error:
+    | {
+        validation?: Array<{
+          instancePath?: string;
+          keyword?: string;
+          params?: Record<string, unknown>;
+        }>;
+      }
+    | undefined
+): string {
+  const first = error?.validation?.[0];
+  if (!first) return 'Ungültige Eingabe.';
+
+  const field =
+    first.keyword === 'required'
+      ? `/${String(first.params?.missingProperty ?? '')}`
+      : (first.instancePath ?? '');
+
+  switch (field) {
+    case '/departure':
+      return `Bitte einen gültigen Start-Ort angeben (1–${DEPARTURE_MAX_LENGTH} Zeichen).`;
+    case '/destination':
+      return `Bitte einen gültigen Ziel-Ort angeben (1–${DESTINATION_MAX_LENGTH} Zeichen).`;
+    case '/departure_time':
+      return 'Bitte eine gültige Abfahrtszeit angeben.';
+    case '/available_seats':
+      return `Die Anzahl freier Sitzplätze muss zwischen ${AVAILABLE_SEATS_MIN} und ${AVAILABLE_SEATS_MAX} liegen.`;
+    default:
+      return 'Ungültige Eingabe.';
+  }
+}
 
 /**
  * Rides routes: create and manage ride offers.
@@ -167,7 +213,7 @@ export async function ridesRoutes(fastify: FastifyInstance): Promise<void> {
       if (request.validationError) {
         return reply.code(400).send({
           success: false,
-          error: `Ungültige Eingabe: Alle Felder erforderlich (Abfahrtsort, Zielort, Abfahrtszeit, Sitzplätze).`,
+          error: validationMessage(request.validationError),
         });
       }
 

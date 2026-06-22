@@ -3,6 +3,8 @@
  * Represents ride offers made by drivers.
  */
 
+import type { ApiResponse } from './api.types.js';
+
 /**
  * ISO 8601 DateTime as a branded string type for improved type safety.
  * While transmitted as a string in JSON, this type helps prevent any string
@@ -39,39 +41,13 @@ export interface CreateRideRequest {
 }
 
 /**
- * Response body for POST /api/rides (201 Created)
- * Returns the created Ride object with server-assigned fields.
+ * Response body for POST /api/rides.
+ * 201 → the created Ride (with server-assigned fields); 400/401 → an error.
  */
-export interface CreateRideResponse {
-  success: true;
-  data: Ride;
-}
+export type RideCreateResponse = ApiResponse<Ride>;
 
 /**
- * Response body for POST /api/rides error cases (400, 401)
+ * Response body for GET /api/rides/my-rides.
+ * 200 → the authenticated user's rides, sorted by departure_time; 401 → an error.
  */
-export interface CreateRideErrorResponse {
-  success: false;
-  error: string;
-}
-
-export type RideCreateResponse = CreateRideResponse | CreateRideErrorResponse;
-
-/**
- * Response body for GET /api/rides/my-rides (200 OK)
- * Returns an array of the authenticated user's rides, sorted by departure_time.
- */
-export interface MyRidesResponse {
-  success: true;
-  data: Ride[];
-}
-
-/**
- * Response body for GET /api/rides/my-rides error case (401)
- */
-export interface MyRidesErrorResponse {
-  success: false;
-  error: string;
-}
-
-export type RidesListResponse = MyRidesResponse | MyRidesErrorResponse;
+export type RidesListResponse = ApiResponse<Ride[]>;
