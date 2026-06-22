@@ -34,6 +34,8 @@ Fahrten anbieten und sich auf fremde Fahrten anmelden.
 - Die Fahrt gehört dem anbietenden Nutzer
 - Vereinfachung: Start und Ziel sind nur Strings, keine Koordinaten o.ä. Es werden
   keine Karten genutzt.
+- Der Fahrer kann seine angebotene Fahren in einer einfachen Liste sehen.
+- Authentifizierung ist erforderlich
 
 ### 4. Fahrten ansehen
 
@@ -43,6 +45,7 @@ Fahrten anbieten und sich auf fremde Fahrten anmelden.
 - Liste aller angebotener Fahrten mit noch freien Sitzplätzen, deren Zeitpunkt
   in der Zukunft liegt.
 - Vereinfachung: kein Filtern, keine Suche
+- Authentifizierung ist erforderlich
 
 ### 5. Für eine Fahrt anmelden
 
@@ -52,3 +55,4 @@ Fahrten anbieten und sich auf fremde Fahrten anmelden.
 - Reservierung nur, solange Sitzplätze frei sind; danach Fehlermeldung
 - Eine Reservierung verringert die freien Sitzplätze um 1
 - Pro Nutzer max. eine Reservierung je Fahrt
+- Authentifizierung ist erforderlich

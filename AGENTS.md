@@ -42,7 +42,7 @@ config/     Gemeinsame Konfiguration (TypeScript, ESLint, Vitest)
 ## Konventionen
 
 - ESM-Module, `async/await`
-- Eingaben am API-Rand validieren (Fastify JSON-Schema)
+- Eingaben am API-Rand validieren (Fastify JSON-Schema für Request und Resonses)
 - Konfiguration über Umgebungsvariablen, keine Geheimnisse im Code
 - Keine automatischen Commits, die Commits werden manuell erstellt.
 - **shared/**: Gemeinsame TypeScript-Typen & Utilities, importierbar via `from 'shared'`.
