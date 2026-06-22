@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import RegisterForm from './components/RegisterForm';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
+import MyRidesPage from './pages/MyRidesPage';
 
 /**
  * Application routes. `/` is the start page; more routes (rides list, etc.)
@@ -13,6 +14,7 @@ export default function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/register" element={<RegisterForm />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/my-rides" element={<MyRidesPage />} />
     </Routes>
   );
 }

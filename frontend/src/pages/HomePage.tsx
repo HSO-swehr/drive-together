@@ -28,9 +28,12 @@ export default function HomePage() {
           <h1 className="mb-4">drive-together</h1>
 
           {authenticated === null ? null : authenticated ? (
-            <p className="text-muted">
-              Du bist angemeldet. Deine Fahrten erscheinen hier in Kürze.
-            </p>
+            <>
+              <p className="text-muted">Du bist angemeldet.</p>
+              <p>
+                <Link to="/my-rides">Meine Fahrten</Link>
+              </p>
+            </>
           ) : (
             <>
               <p className="text-muted">Mitfahrgelegenheiten organisieren.</p>
