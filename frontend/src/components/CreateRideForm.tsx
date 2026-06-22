@@ -62,6 +62,8 @@ export default function CreateRideForm({ onSuccess }: CreateRideFormProps) {
     };
 
     const result = await createRide(data);
+    // Re-enable the form regardless of outcome, so the user can submit again.
+    setLoading(false);
 
     if (result.success) {
       // Clear form and notify parent
@@ -75,7 +77,6 @@ export default function CreateRideForm({ onSuccess }: CreateRideFormProps) {
     }
 
     setError(result.error ?? 'Ein Fehler ist aufgetreten.');
-    setLoading(false);
   }
 
   return (

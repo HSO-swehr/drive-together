@@ -78,6 +78,23 @@ describe('CreateRideForm', () => {
     });
   });
 
+  it('re-enables the inputs after a successful submission so another ride can be offered', async () => {
+    mockedCreateRide.mockResolvedValueOnce({ success: true, data: {} as any });
+
+    render(<CreateRideForm />);
+    fill();
+    fireEvent.click(submitButton());
+
+    // Regression: on success the form previously stayed in the loading state,
+    // leaving every field disabled. The inputs must become editable again.
+    await waitFor(() => {
+      expect(departure()).not.toBeDisabled();
+      expect(destination()).not.toBeDisabled();
+      expect(departureTime()).not.toBeDisabled();
+      expect(availableSeats()).not.toBeDisabled();
+    });
+  });
+
   it('displays error message on failed submission', async () => {
     mockedCreateRide.mockResolvedValueOnce({
       success: false,
