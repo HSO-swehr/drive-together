@@ -36,6 +36,10 @@ Fahrten anbieten und sich auf fremde Fahrten anmelden.
   keine Karten genutzt.
 - Der Fahrer kann seine angebotene Fahren in einer einfachen Liste sehen.
 - Authentifizierung ist erforderlich
+- User-Interface: Es gibt auf der Einstiegsseite (nach dem Login) einen Link
+  "Meine Fahrten". Über den Link kommt man auf eine Seite, auf der es oben eine
+  Formular zum Anlegen einer neue Fahrt gibt; danach listet eine Tabelle alle
+  Fahrten des eingeloggten Nutzers auf.
 
 ### 4. Fahrten ansehen
 
