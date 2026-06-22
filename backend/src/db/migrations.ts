@@ -23,4 +23,27 @@ export const migrations = [
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `,
+
+  // Rides table (created for ride offerings).
+  `
+    CREATE TABLE IF NOT EXISTS rides (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      departure TEXT NOT NULL,
+      destination TEXT NOT NULL,
+      departure_time DATETIME NOT NULL,
+      available_seats INTEGER NOT NULL CHECK (available_seats > 0),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `,
+
+  // Indices for common queries
+  `
+    CREATE INDEX IF NOT EXISTS idx_rides_user_id ON rides(user_id)
+  `,
+
+  `
+    CREATE INDEX IF NOT EXISTS idx_rides_departure_time ON rides(departure_time)
+  `,
 ];

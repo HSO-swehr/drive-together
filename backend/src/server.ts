@@ -4,6 +4,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { initDb } from './db.js';
 import { authRoutes } from './routes/auth.js';
+import { ridesRoutes } from './routes/rides.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,8 +24,8 @@ function registerApi(fastify: FastifyInstance): void {
   });
 
   fastify.register(authRoutes);
+  fastify.register(ridesRoutes);
 
-  // TODO: Add rides routes
   // TODO: Add bookings routes
 }
 

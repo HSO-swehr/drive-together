@@ -3,3 +3,5 @@
 
 export * from './auth.types.js';
 export * from './auth.validation.js';
+export * from './rides.types.js';
+export * from './rides.validation.js';

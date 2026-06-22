@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { randomUUID } from 'crypto';
+import type { Ride } from 'shared';
 import { migrations } from './db/migrations.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -136,4 +137,51 @@ export function getSessionUser(sessionId: string): number | null {
   const stmt = database.prepare('SELECT user_id FROM sessions WHERE id = ?');
   const result = stmt.get(sessionId) as { user_id: number } | undefined;
   return result?.user_id ?? null;
+}
+
+/**
+ * Create a new ride offer.
+ * @param userId The user (driver) offering the ride
+ * @param departure Start location (string)
+ * @param destination End location (string)
+ * @param departure_time ISO 8601 datetime string
+ * @param available_seats Number of available seats (must be >= 1)
+ * @returns The created Ride object with server-assigned id and created_at
+ *
+ * FIXME: tests missing
+ */
+export function createRide(
+  userId: number,
+  departure: string,
+  destination: string,
+  departure_time: string,
+  available_seats: number
+): Ride {
+  const database = getDb();
+  const stmt = database.prepare(
+    'INSERT INTO rides (user_id, departure, destination, departure_time, available_seats) VALUES (?, ?, ?, ?, ?)'
+  );
+  const result = stmt.run(userId, departure, destination, departure_time, available_seats);
+  const rideId = result.lastInsertRowid as number;
+
+  // Retrieve and return the full created ride
+  const rideStmt = database.prepare('SELECT * FROM rides WHERE id = ?');
+  const row = rideStmt.get(rideId) as Ride;
+  return row;
+}
+
+/**
+ * Get all rides offered by a specific user, sorted by departure_time ascending.
+ * @param userId The user whose rides to fetch
+ * @returns Array of Ride objects
+ *
+ * FIXME: tests missing
+ */
+export function getMyRides(userId: number): Ride[] {
+  const database = getDb();
+  const stmt = database.prepare(
+    'SELECT * FROM rides WHERE user_id = ? ORDER BY departure_time ASC'
+  );
+  const rows = stmt.all(userId) as Ride[];
+  return rows;
 }
