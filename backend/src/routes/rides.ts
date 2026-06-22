@@ -8,33 +8,8 @@ import {
   AVAILABLE_SEATS_MIN,
   AVAILABLE_SEATS_MAX,
 } from 'shared';
-import { createRide, getMyRides, getSessionUser } from '../db.js';
-
-/**
- * Extract the `session` value from a raw Cookie header, or null if absent.
- * Mirrors the implementation in auth.ts.
- *
- * FIXME: this is too general for this module
- */
-function parseSessionCookie(cookieHeader: string | undefined): string | null {
-  if (!cookieHeader) return null;
-  for (const part of cookieHeader.split(';')) {
-    const [name, ...rest] = part.trim().split('=');
-    if (name === 'session') return rest.join('=') || null;
-  }
-  return null;
-}
-
-/**
- * Get the authenticated user's ID from the request cookie, or null if not authenticated.
- *
- * FIXME: this is too general for this module
- */
-function getAuthenticatedUserId(request: FastifyRequest): number | null {
-  const sessionId = parseSessionCookie(request.headers.cookie);
-  if (!sessionId) return null;
-  return getSessionUser(sessionId);
-}
+import { createRide, getMyRides } from '../db.js';
+import { getAuthenticatedUserId } from '../auth-utils.js';
 
 /**
  * Fastify JSON schema for POST /api/rides request.

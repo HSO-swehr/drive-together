@@ -4,6 +4,16 @@
  */
 
 /**
+ * ISO 8601 DateTime as a branded string type for improved type safety.
+ * While transmitted as a string in JSON, this type helps prevent any string
+ * from being used where a datetime is expected.
+ *
+ * Note: Runtime validation happens via JSON schema, not TypeScript.
+ * This is purely for type-checking and documentation.
+ */
+export type ISO8601DateTime = string & { readonly __brand: 'ISO8601DateTime' };
+
+/**
  * Core Ride model.
  * Represents a ride offer by a driver.
  */
@@ -12,9 +22,9 @@ export interface Ride {
   user_id: number;
   departure: string;
   destination: string;
-  departure_time: string; // ISO 8601 datetime  FIXME: use a proper type not string
+  departure_time: ISO8601DateTime;
   available_seats: number;
-  created_at: string; // ISO 8601 datetime      FIXME: use a proper type not string
+  created_at: ISO8601DateTime;
 }
 
 /**
@@ -24,7 +34,7 @@ export interface Ride {
 export interface CreateRideRequest {
   departure: string;
   destination: string;
-  departure_time: string; // ISO 8601 datetime   FIXME: use a proper type not string
+  departure_time: ISO8601DateTime;
   available_seats: number;
 }
 

@@ -147,8 +147,6 @@ export function getSessionUser(sessionId: string): number | null {
  * @param departure_time ISO 8601 datetime string
  * @param available_seats Number of available seats (must be >= 1)
  * @returns The created Ride object with server-assigned id and created_at
- *
- * FIXME: tests missing
  */
 export function createRide(
   userId: number,
@@ -174,8 +172,6 @@ export function createRide(
  * Get all rides offered by a specific user, sorted by departure_time ascending.
  * @param userId The user whose rides to fetch
  * @returns Array of Ride objects
- *
- * FIXME: tests missing
  */
 export function getMyRides(userId: number): Ride[] {
   const database = getDb();

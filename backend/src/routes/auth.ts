@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import type { AuthRequest, AuthResponse, AuthMeResponse } from 'shared';
 import { EMAIL_PATTERN, EMAIL_MAX_LENGTH, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from 'shared';
 import { createUser, getUserByEmail, createSession, getSessionUser } from '../db.js';
+import { parseSessionCookie } from '../auth-utils.js';
 
 // bcrypt work factor. Higher = slower = more resistant to brute force.
 const BCRYPT_ROUNDS = 10;
@@ -43,20 +44,6 @@ const loginSchema = {
     },
   },
 } as const;
-
-/**
- * Extract the `session` value from a raw Cookie header, or null if absent.
- * Done by hand (no cookie plugin) to mirror the manual Set-Cookie on login and
- * keep the minimal-auth surface dependency-free.
- */
-function parseSessionCookie(cookieHeader: string | undefined): string | null {
-  if (!cookieHeader) return null;
-  for (const part of cookieHeader.split(';')) {
-    const [name, ...rest] = part.trim().split('=');
-    if (name === 'session') return rest.join('=') || null;
-  }
-  return null;
-}
 
 /** True if the error is a SQLite UNIQUE-constraint violation. */
 function isUniqueViolation(error: unknown): boolean {
